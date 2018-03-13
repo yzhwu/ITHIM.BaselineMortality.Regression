@@ -10,18 +10,52 @@ library(viridis)
 # obtain the key from https://api.census.gov/data/key_signup.html
 census_api_key("5a65de552c52e90c3a9a2683d73a38140ccc3082")
 
-# data set pick up: ACS 5years 2011 (2007-2011) (5-year average value)
-# CDPH zip level data: 2008-2010
+# Data sets:
+# 1. 2010 Decenial US census
+# 2. ACS 5years 2011 (2007-2011) (5-year average value)
+# 3. CDPH zip level data: 2008-2010
 
 # obtain the variable definition
+v.decenial.10 <- load_variables(2010,"sf1")
 v.acs5.11 <- load_variables(2011,"acs5")
 
 # view the variables
 View(v.acs5.11)
+View(v.decenial.10)
 
 ###### Related variables (independent variables)
 
+#####  I. Decenial 2010 #####
 # Total population:
+# P0010001: total population
+
+# Population - Sex by Age
+# P0120003  Male: !! Under 5 years
+# P0120004	Male: !! 5 to 9 years
+# P0120005	Male: !! 10 to 14 years
+# P0120006	Male: !! 15 to 17 years
+# P0120007	Male: !! 18 and 19 years
+# P0120008	Male: !! 20 years
+# P0120009	Male: !! 21 years
+# P0120010	Male: !! 22 to 24 years
+# P0120011	Male: !! 25 to 29 years
+# P0120012	Male: !! 30 to 34 years
+# P0120013	Male: !! 35 to 39 years
+# P0120014	Male: !! 40 to 44 years
+
+# P0120027	Female: !! Under 5 years	
+# P0120028	Female: !! 5 to 9 years	
+
+# Race:
+# P0050003: Not Hispanic or Latino: !! White alone
+# P0050004: Not Hispanic or Latino: !! Black or African American alone
+# P0040003: Hispanic or Latino
+
+
+#####  II. ACS 5 2007-2011 #####
+
+# Total population:
+# P0010001: total population - decenial
 # B01003_001E: total population
 
 # Race:
