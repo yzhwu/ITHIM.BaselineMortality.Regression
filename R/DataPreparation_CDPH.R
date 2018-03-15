@@ -53,8 +53,8 @@ no.zip <- length(zip.code.all)
 year <- c("2008","2009","2010")
 
 result <- NULL
-for (i in 1:10){
-  print(i)
+for (i in 1:no.zip){
+  #print(i)
   temp <- processCDPH(zip.code.all[i],year)
   result <- cbind(result,temp)
 }
