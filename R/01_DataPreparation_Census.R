@@ -26,7 +26,7 @@ View(v.acs5.11)
 ### total population
 population.total <- get_decennial(geography = "zcta",variables = "P0010001",year = 2010,state = "CA")
 
-zcta.CA.all <- unique(population.total$GEOID[which(population.total$GEOID%in%c(90001:96162))])
+#zcta.CA.all <- unique(population.total$GEOID[which(population.total$GEOID%in%c(90001:96162))])
 
 ### population - sex by age
 
@@ -91,40 +91,97 @@ colnames(pop.race.percentage) <- c("White%","Black%","Hisp%")
 # ID.3: Some college or associate's degree
 # ID.4: Bachelor's degree or higher
 pop.edu.1 <- get_acs(geography = "zcta",variables = "B16010_002E",year = 2011,survey = "acs5")
+pop.edu.1.ca <- pop.edu.1[which(pop.edu.1$GEOID%in%ca.zip.list$zcta),]
 pop.edu.2 <- get_acs(geography = "zcta",variables = "B16010_015E",year = 2011,survey = "acs5")
+pop.edu.2.ca <- pop.edu.2[which(pop.edu.2$GEOID%in%ca.zip.list$zcta),]
 pop.edu.3 <- get_acs(geography = "zcta",variables = "B16010_028E",year = 2011,survey = "acs5")
+pop.edu.3.ca <- pop.edu.3[which(pop.edu.3$GEOID%in%ca.zip.list$zcta),]
 pop.edu.4 <- get_acs(geography = "zcta",variables = "B16010_041E",year = 2011,survey = "acs5")
+pop.edu.4.ca <- pop.edu.4[which(pop.edu.4$GEOID%in%ca.zip.list$zcta),]
 
 ### Poverty: Income in the past 12 months below poverty level
 pop.poverty <- get_acs(geography = "zcta",variables = "B17001_002E",year = 2011,survey = "acs5")
+pop.poverty.ca <- pop.poverty[which(pop.poverty$GEOID%in%ca.zip.list$zcta),]
 
 ### Household Income:
 variable.list.income <- c(paste0("B19001_00",2:9,"E"),paste0("B19001_0",10:17,"E"))
 
-pop.income <- NULL
+pop.income.ca <- NULL
 
 for (i in 1:length(variable.list.income)){
   
   temp <- get_acs(geography = "zcta",variables = variable.list.income[i],year = 2011,survey = "acs5")
+  temp.ca <- temp[which(temp$GEOID%in%ca.zip.list$zcta),]
   
-  pop.income <- cbind(pop.income,temp$estimate)
+  pop.income.ca <- cbind(pop.income.ca,temp.ca$estimate)
   
 }
+
+
 
 ### Employment status for the population 16 years and over
 #  In labor force; Civilian labor force; Unemployed
 pop.unemployed <- get_acs(geography = "zcta",variables = "B23025_005E",year = 2011,survey = "acs5")
+pop.unemployed.ca <- pop.unemployed[which(pop.unemployed$GEOID%in%ca.zip.list$zcta),]
 
 
-population.total <- get_acs(geography = "zcta",variables = "B16010_002E",year = 2011,survey = "acs5")
+#population.total <- get_acs(geography = "zcta",variables = "B16010_002E",year = 2011,survey = "acs5")
 
-population.total <- get_acs(geography = "county",variables = "B17001_002E",year = 2011,survey = "acs5",state = "CA")
+#population.total <- get_acs(geography = "county",variables = "B17001_002E",year = 2011,survey = "acs5",state = "CA")
 
-population.total
-a<-population.total[which(population.total$GEOID%in%c(90001:96162)),]
-class(a)
+#population.total
+#a<-population.total[which(population.total$GEOID%in%c(90001:96162)),]
+#class(a)
 
 
+### merge census datasets with death rates from CDPH
+setwd("/Users/Yizheng/Documents/02_Work/17_ITHIM-Phase II/04_Data/00_baseline mortality/01_Regression")
+death.cdph <- read.csv("CA_localGBD.allcause.ziplevel.csv")
+colnames(death.cdph) <- c("ID","GEOID","AGE.SEX","DeathCount")
+
+ca.zip.list <- read.csv("ITHIM.BaselineMortality.Regression/zip_list_CA.csv")
+no.zip <- nrow(ca.zip.list)
+
+pop.age.gender <- matrix(data = NA,nrow = no.zip * 16, ncol = 3)
+colnames(pop.age.gender) <- c("ZIP","AGE.SEX","POP")
+head(pop.age.gender)
+
+pop.age.gender[,1] <- rep(ca.zip.list$zcta,each = 16)
+pop.age.gender[,2] <- rep(1:16,no.zip)
+
+pop.total.ca <- matrix(data = NA,nrow = no.zip, ncol = 2)
+
+race.percentage.ca <- matrix(data = NA,nrow = no.zip, ncol = 4)
+pop.total.ca[,1] <-  race.percentage.ca[,1] <- ca.zip.list$zcta
+
+for (i in 1:no.zip){
+  
+  temp.male <- pop.male.age[which(ca.zip.list[i,2]==population.total$GEOID),]
+  temp.female <- pop.female.age[which(ca.zip.list[i,2]==population.total$GEOID),]
+  
+  pop.age.gender[(16*i-15):(16*i),3] <- c(temp.male,temp.female)
+  
+  temp.race <- pop.race.percentage[which(ca.zip.list[i,2]==population.total$GEOID),]
+  race.percentage.ca[i,2:4]<-temp.race
+  
+  temp.pop.total <- population.total[which(ca.zip.list[i,2]==population.total$GEOID),]
+  pop.total.ca[i,2] <- temp.pop.total$value
+  
+}
+
+death.cdph <- merge(death.cdph,population.total,by = "GEOID")
+
+#merge all variables into one table
+regression.data <- cbind(death.cdph[,c(1:3)],(death.cdph$DeathCount/pop.age.gender[,3]*1000),race.percentage.ca[,2:4][rep(1:no.zip,rep(16,no.zip)),],rep(pop.edu.1.ca$estimate/pop.total.ca[,2],each=16),rep(pop.edu.2.ca$estimate/pop.total.ca[,2],each=16),
+                         rep(pop.edu.3.ca$estimate/pop.total.ca[,2],each=16),rep(pop.edu.4.ca$estimate/pop.total.ca[,2],each=16),rep(pop.poverty.ca$estimate/pop.total.ca[,2],each = 16),(pop.income.ca[,1:16]/pop.total.ca[,2])[rep(1:no.zip,rep(16,no.zip)),],
+                        rep(pop.unemployed.ca$estimate/pop.total.ca[,2],each=16))
+
+head(regression.data)
+
+colnames(regression.data) <- c("ZIP","ID","AGE.SEX","Death.Rate","White%","Black%","Hisp%","EDU.1",
+                               "EDU.2","EDU.3","EDU.4","Poverty%",paste0("Income.",1:16),"Unemployed%")
+
+write.csv(regression.data,file = "regression_data.csv")
 
 
 

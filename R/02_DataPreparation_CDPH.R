@@ -4,7 +4,7 @@
 # library difinition
 library(foreign)
 
-##################### Part III. extract the death numbers from CDPH (by zcta) ###############
+##################### Part I. extract the death numbers from CDPH (by zcta) ###############
 
 # Set working drectory
 setwd("/Users/Yizheng/Documents/02_Work/17_ITHIM-Phase II/04_Data/00_baseline mortality/01_Regression")
@@ -41,18 +41,28 @@ processCDPH <- function(zip.code,year){
 
 # Part 3 Output the result in .csv file --------------------------------------------------------
 
-# CA zip code list (range: 90000)
+# CA zip code list
+ca.zip.list <- read.csv("ITHIM.BaselineMortality.Regression/zip_list_CA.csv")
 
-no.zip <- length(zcta.CA.all)
+no.zip <- nrow(ca.zip.list)
 year <- c("2008","2009","2010")
 
-result <- NULL
-for (i in 1:10){
-  #print(i)
-  temp <- processCDPH(zip.code.all[i],year)
-  result <- cbind(result,temp)
+result <- matrix(data = NA,nrow = no.zip * 16, ncol = 3)
+colnames(result) <- c("ZIP","AGE.SEX","Death")
+head(result)
+
+result[,1] <- rep(ca.zip.list$zcta,each = 16)
+result[,2] <- rep(1:16,no.zip)
+
+for (i in 1:no.zip){
+  
+  print(i)
+  temp <- processCDPH(ca.zip.list$zcta[i],year)
+  
+  result[(16*i-15):(16*i),3] <- temp/3 # annual average of three years result
+  
 }
 
-write.csv(result/3,file = "CA_localGBD.allcause.ziplevel.csv")
+write.csv(result,file = "CA_localGBD.allcause.ziplevel_0319.csv")
 
 
