@@ -173,18 +173,23 @@ for (i in 1:no.zip){
 # merge all variables into one table
 death.cdph <- merge(death.cdph,population.total,by = "GEOID")
 
-regression.data <- cbind(death.cdph[,c(1:3)],(death.cdph$DeathCount/pop.age.gender[,3]*1000),race.percentage.ca[,2:4][rep(1:no.zip,rep(16,no.zip)),],rep(pop.edu.1.ca$estimate/pop.total.ca[,2],each=16),rep(pop.edu.2.ca$estimate/pop.total.ca[,2],each=16),
+regression.data <- cbind(death.cdph[,c(1:3)],(death.cdph$DeathCount/pop.age.gender[,3]),race.percentage.ca[,2:4][rep(1:no.zip,rep(16,no.zip)),],rep(pop.edu.1.ca$estimate/pop.total.ca[,2],each=16),rep(pop.edu.2.ca$estimate/pop.total.ca[,2],each=16),
                          rep(pop.edu.3.ca$estimate/pop.total.ca[,2],each=16),rep(pop.edu.4.ca$estimate/pop.total.ca[,2],each=16),rep(pop.poverty.ca$estimate/pop.total.ca[,2],each = 16),(pop.income.ca[,1:16]/pop.total.ca[,2])[rep(1:no.zip,rep(16,no.zip)),],
                         rep(pop.unemployed.ca$estimate/pop.total.ca[,2],each=16))
 
 head(regression.data)
 
-colnames(regression.data) <- c("ZIP","ID","AGE.SEX","Death.Rate","White%","Black%","Hisp%","EDU.1",
-                               "EDU.2","EDU.3","EDU.4","Poverty%",paste0("Income.",1:16),"Unemployed%")
+colnames(regression.data) <- c("ZIP","ID","AGE.SEX","Death.Rate","White","Black","Hisp","EDU.1",
+                               "EDU.2","EDU.3","EDU.4","Poverty",paste0("Income.",1:16),"Unemployed")
+
+delete.zcta <- unique(regression.data$ZIP[which(is.na(regression.data$Death.Rate)==TRUE|is.infinite(regression.data$Death.Rate)==TRUE)])   
+less500.zcta <- unique(population.total$GEOID[which(population.total$value<500)])
+
+regression.data.v <- regression.data[-(which(regression.data$ZIP%in%c(delete.zcta,less500.zcta))),]
+
+#regression.data.v <- 
 
 # output the data sets
-write.csv(regression.data,file = "regression_data.csv")
-
-
+write.csv(regression.data.v,file = "regression_data_v.csv")
 
 
