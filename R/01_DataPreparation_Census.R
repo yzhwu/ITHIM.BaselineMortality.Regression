@@ -182,7 +182,10 @@ head(regression.data)
 colnames(regression.data) <- c("ZIP","ID","AGE.SEX","Death.Rate","White","Black","Hisp","EDU.1",
                                "EDU.2","EDU.3","EDU.4","Poverty",paste0("Income.",1:16),"Unemployed")
 
+# delete those records with NA's 
 delete.zcta <- unique(regression.data$ZIP[which(is.na(regression.data$Death.Rate)==TRUE|is.infinite(regression.data$Death.Rate)==TRUE)])   
+
+# delete those sparsely-populated zctas (less than 500 population)
 less500.zcta <- unique(population.total$GEOID[which(population.total$value<500)])
 
 regression.data.v <- regression.data[-(which(regression.data$ZIP%in%c(delete.zcta,less500.zcta))),]
