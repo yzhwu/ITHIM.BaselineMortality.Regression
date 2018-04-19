@@ -16,8 +16,20 @@ head(data)
 # data.test <- data[-index,]
 
 # create new data frame with all missing values removed 
-data.v <- na.omit(data)
+data.c <- na.omit(data)
 #data.test <- na.omit(data.test)
+
+
+######## Regression in a single equation
+# select variables
+data.v <- cbind(data.c$Death.Rate,data.c$AGE.SEX,data.c$Black,data.c$Hisp,data.c$EDU.4,data.c$Poverty,data.c$Unemployed)
+
+#data.v <- cbind(data.c$Death.Rate,data.c$AGE.SEX,data.c$White,data.c$EDU.4,(data.c$Income.14+data.c$Income.15+data.c$Income.16),data.c$Unemployed)
+
+
+colnames(data.v) <- c("Death.Rate","AGE.SEX","Black","Hisp","EDU.4","Poverty","Unemployed")
+head(data.v)
+data.v <- as.data.frame(data.v)
 
 # Define full and null models and do step procedure
 model.null <- glm(Death.Rate~1,
@@ -25,10 +37,7 @@ model.null <- glm(Death.Rate~1,
                   family = binomial(link = "logit")
                   )
 
-model.full = glm(Death.Rate ~ as.factor(AGE.SEX) + White + Black + Hisp + EDU.1 + EDU.2 + 
-                   EDU.3 + EDU.4 + Poverty + Unemployed+ Income.1 + Income.2 + Income.3 + Income.4 +  
-                   Income.5 + Income.6 + Income.7 + Income.8 + Income.9 + Income.10 + Income.11 + 
-                   Income.12 + Income.13 + Income.14 +  Income.15 + Income.16,
+model.full = glm(Death.Rate ~ Black + AGE.SEX + Hisp + EDU.4 + Poverty + Unemployed,
                  data=data.v,
                  family = binomial(link="logit")
 )
@@ -44,6 +53,64 @@ model.final <- glm(Death.Rate ~ as.factor(AGE.SEX),
                    family = binomial(link = "logit")
                    )
 summary(model.final)
+
+####### Regression seperately for each group
+
+# age.sex group 1
+
+data.c.1 <- data.c[which(data.c$AGE.SEX==1),]
+head(data.c.1)
+
+data.v.1 <- cbind(data.c.1$Death.Rate,data.c.1$White,data.c.1$Hisp,data.c.1$EDU.4,(data.c.1$Income.15+data.c.1$Income.16),data.c.1$Unemployed)
+head(data.v.1)
+
+colnames(data.v.1) <- c("Death.Rate","White","Hisp","EDU.4","HighIncome","Unemployed")
+head(data.v.1)
+data.v.1 <- as.data.frame(data.v.1)
+
+model.null <- glm(Death.Rate~1,
+                  data = data.v.1,
+                  family = binomial(link = "logit")
+)
+
+model.full = glm(Death.Rate ~ White + Hisp + EDU.4 + HighIncome + Unemployed,
+                 data=data.v.1,
+                 family = binomial(link="logit")
+)
+
+step(model.null,
+     scope = list(upper=model.full),
+     direction="both",
+     test="Chisq",
+     data=data.v.1)
+
+# age.sex group 2
+
+data.c.2 <- data.c[which(data.c$AGE.SEX==2),]
+head(data.c.2)
+
+data.v.2 <- cbind(data.c.2$Death.Rate,data.c.2$White,data.c.2$Hisp,data.c.2$EDU.4,(data.c.2$Income.15+data.c.2$Income.16),data.c.2$Unemployed)
+head(data.v.2)
+
+colnames(data.v.2) <- c("Death.Rate","White","Hisp","EDU.4","HighIncome","Unemployed")
+head(data.v.2)
+data.v.2 <- as.data.frame(data.v.2)
+
+model.null <- glm(Death.Rate~1,
+                  data = data.v.2,
+                  family = binomial(link = "logit")
+)
+
+model.full = glm(Death.Rate ~ White + Hisp + EDU.4 + HighIncome + Unemployed,
+                 data=data.v.2,
+                 family = binomial(link="logit")
+)
+
+step(model.null,
+     scope = list(upper=model.full),
+     direction="both",
+     test="Chisq",
+     data=data.v.2)
 
 
 
