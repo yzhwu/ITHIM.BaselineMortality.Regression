@@ -37,7 +37,7 @@ model.null <- glm(Death.Rate~1,
                   family = binomial(link = "logit")
                   )
 
-model.full = glm(Death.Rate ~ Black + AGE.SEX + Hisp + EDU.4 + Poverty + Unemployed,
+model.full = glm(Death.Rate ~ Black + as.factor(AGE.SEX) + Hisp + EDU.4 + Poverty + Unemployed,
                  data=data.v,
                  family = binomial(link="logit")
 )
