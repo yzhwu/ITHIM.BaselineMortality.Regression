@@ -127,7 +127,7 @@ for (i in 1:length(variable.list.income)){
 pop.unemployed <- get_acs(geography = "zcta",variables = "B23025_005E",year = 2011,survey = "acs5")
 pop.unemployed.ca <- pop.unemployed[which(pop.unemployed$GEOID%in%ca.zip.list$zcta),] # target zcta
 
-##################### Part II. merge census datasets with death rates from CDPH (by zcta) ###############
+##################### Part III. merge census datasets with death rates from CDPH (by zcta) ###############
 
 setwd("/Users/Yizheng/Documents/02_Work/17_ITHIM-Phase II/04_Data/00_baseline mortality/01_Regression")
 # input death files
@@ -194,5 +194,66 @@ regression.data.v <- regression.data[-(which(regression.data$ZIP%in%c(delete.zct
 
 # output the data sets
 write.csv(regression.data.v,file = "regression_data_v.csv")
+
+##################### Part IV. Prepare the datasets for Model 1 ###############
+
+#total population
+population.total <- get_decennial(geography = "zcta",variables = "P0010001",year = 2010,state = "CA")
+
+# total pop for each zcta
+zcta.ca <- matrix(data = NA,nrow = no.zip, ncol = 24)
+
+colnames(zcta.ca)<-c("zcta","total population","Death Count","non-Hisp White","non-Hisp Black","Hisp or Latino",
+                     "Poverty","Edu1",paste0("male",1:8),paste0("female",1:8))
+
+zcta.ca[,1] <- ca.zip.list$zcta
+
+for (i in 1:no.zip){
+  # total population
+  temp.pop.total <- population.total[which(ca.zip.list[i,2]==population.total$GEOID),]
+  zcta.ca[i,2] <- temp.pop.total$value
+  
+  # total death count (three-year average)
+  temp.death.count <- sum(death.cdph$DeathCount[which(ca.zip.list[i,2]==death.cdph$GEOID)])
+  zcta.ca[i,3] <- temp.death.count
+  
+  # non-Hisp White
+  temp.white <- pop.white[which(ca.zip.list[i,2]==pop.white$GEOID),]
+  zcta.ca[i,4] <- temp.white$value
+  
+  # non-Hisp Black
+  temp.black <- pop.black[which(ca.zip.list[i,2]==pop.black$GEOID),]
+  zcta.ca[i,5] <- temp.black$value
+  
+  # non-Hisp Hisp or Latino
+  temp.hisp <- pop.Hisp[which(ca.zip.list[i,2]==pop.Hisp$GEOID),]
+  zcta.ca[i,6] <- temp.hisp$value
+  
+  # poverty: Income in the past 12 months below poverty level
+  temp.poverty <- pop.poverty.ca[which(ca.zip.list[i,2]==pop.poverty.ca$GEOID),]
+  zcta.ca[i,7] <- temp.poverty$estimate
+  
+  # Edu1: less than high school graduate
+  temp.Edu1 <- pop.edu.1.ca[which(ca.zip.list[i,2]==pop.edu.1.ca$GEOID),]
+  zcta.ca[i,8] <- temp.Edu1$estimate
+  
+  # Male
+  temp.male <- pop.male.age[which(ca.zip.list[i,2]==population.total$GEOID),]
+  zcta.ca[i,9:16]<-temp.male
+  
+  # Female
+  temp.female <- pop.female.age[which(ca.zip.list[i,2]==population.total$GEOID),]
+  zcta.ca[i,17:24]<-temp.female
+  
+}
+
+
+
+
+
+85095178
+
+6570 6326
+6575 0361
 
 
