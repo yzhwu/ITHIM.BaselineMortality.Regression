@@ -247,7 +247,7 @@ for (i in 1:no.zip){
   
 }
 
-
+write.csv(zcta.ca,file = "regression_data_model_1.csv")
 
 
 
