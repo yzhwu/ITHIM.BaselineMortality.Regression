@@ -249,11 +249,3 @@ for (i in 1:no.zip){
 
 write.csv(zcta.ca,file = "regression_data_model_1.csv")
 
-
-
-85095178
-
-6570 6326
-6575 0361
-
-
